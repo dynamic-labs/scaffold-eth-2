@@ -1,18 +1,17 @@
 "use client";
 
 import { useEffect } from "react";
-import { RainbowKitProvider, darkTheme, lightTheme } from "@rainbow-me/rainbowkit";
+import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
+import { DynamicContextProvider } from "@dynamic-labs/sdk-react-core";
+import { DynamicWagmiConnector } from "@dynamic-labs/wagmi-connector";
 import { Toaster } from "react-hot-toast";
-import { WagmiConfig } from "wagmi";
 import { Footer } from "~~/components/Footer";
 import { Header } from "~~/components/Header";
-import { BlockieAvatar } from "~~/components/scaffold-eth";
 import { ProgressBar } from "~~/components/scaffold-eth/ProgressBar";
 import { useNativeCurrencyPrice } from "~~/hooks/scaffold-eth";
 import { useDarkMode } from "~~/hooks/scaffold-eth/useDarkMode";
+import scaffoldConfig from "~~/scaffold.config";
 import { useGlobalState } from "~~/services/store/store";
-import { wagmiConfig } from "~~/services/web3/wagmiConfig";
-import { appChains } from "~~/services/web3/wagmiConnectors";
 
 const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
   const price = useNativeCurrencyPrice();
@@ -40,15 +39,17 @@ export const ScaffoldEthAppWithProviders = ({ children }: { children: React.Reac
   const { isDarkMode } = useDarkMode();
 
   return (
-    <WagmiConfig config={wagmiConfig}>
+    <DynamicContextProvider
+      settings={{
+        environmentId: scaffoldConfig.dynamicEnvId,
+        walletConnectors: [EthereumWalletConnectors],
+      }}
+      theme={isDarkMode ? "dark" : "light"}
+    >
       <ProgressBar />
-      <RainbowKitProvider
-        chains={appChains.chains}
-        avatar={BlockieAvatar}
-        theme={isDarkMode ? darkTheme() : lightTheme()}
-      >
+      <DynamicWagmiConnector>
         <ScaffoldEthApp>{children}</ScaffoldEthApp>
-      </RainbowKitProvider>
-    </WagmiConfig>
+      </DynamicWagmiConnector>
+    </DynamicContextProvider>
   );
 };
